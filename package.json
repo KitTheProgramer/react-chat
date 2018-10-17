@@ -87,6 +87,7 @@
         "prop-types": "15.6.2",
         "react-dev-utils": "6.0.3",
         "react-hot-loader": "4.3.11",
+        "react-test-renderer": "^16.5.2",
         "redux-logger": "3.0.6",
         "redux-saga-test-plan": "3.7.0",
         "style-loader": "0.23.0",

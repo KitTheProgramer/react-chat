@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 // Theme
 import './theme/init';
 
-const start = <h1 className = 'start'>Поехали!</h1>;
+// Components
+import Root from './pages/Root';
 
-ReactDOM.render(start, document.getElementById('app'));
+ReactDOM.render(<Root />, document.getElementById('app'));
