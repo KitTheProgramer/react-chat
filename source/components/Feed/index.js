@@ -20,6 +20,11 @@ import { socket } from '../../socket/init';
 import { withProfile } from '../../HOC';
 import moment from 'moment';
 
+//Flux
+import dispatcher from '../../flux/dispatcher';
+import { fetchPost, createPost } from '../../flux/actions';
+import PostStore from '../../flux/store';
+
 @withProfile
 export default class Feed extends Component {
 
@@ -37,18 +42,15 @@ export default class Feed extends Component {
         return true;
     }
 
-    state = {
-        posts:            [],
-        isSpinning:       false,
-        isTime:           this._postmanNeedRender(),
-        isPostmanEntered: true,
-    };
-
-
+    //1
+    state = PostStore.getStore();
 
     componentDidMount() {
         const { currentUserFirstName, currentUserLastName } = this.props;
         this._fetchPostAsync();
+
+        //3
+        PostStore.subscribe(this._onChange);
 
         socket.emit('join', GROUP_ID);
 
@@ -57,9 +59,11 @@ export default class Feed extends Component {
 
             if (currentUserFirstName !== createdPost.firstName
                 && currentUserLastName !== createdPost.lastName) {
-                this.setState((prevState) => ({
+                /*this.setState((prevState) => ({
                     posts: [ createdPost, ...prevState.posts ],
-                }));
+                }));*/
+                const action = createPost(createdPost);
+                dispatcher.dispatch(action);
             }
         });
 
@@ -87,16 +91,27 @@ export default class Feed extends Component {
         });
     }
 
+    componentWillUnmount() {
+        PostStore.unsubscribe(this._onChange());
+    }
+
+    //2
+    _onChange = () => {
+        this.setState(PostStore.getStore());
+    };
+
     _createPostAsync = async (comment) => {
         try {
             this._setPostsFetchingState(true);
 
             const post = await api.createPost(comment);
-            this.setState((prevState) => ({
+            /*this.setState((prevState) => ({
                 posts:      [ post, ...prevState.posts ],
                 isSpinning: false,
                 firstLoad:  true,
-            }));
+            }));*/
+            const action = createPost(post);
+            dispatcher.dispatch(action);
         } catch (error) {
             console.log(error.message);
             this._setPostsFetchingState(false);
@@ -114,12 +129,17 @@ export default class Feed extends Component {
             this._setPostsFetchingState(true);
             const posts = await api.fethPosts();
 
-            this.setState({
+            /*this.setState({
                 posts,
                 isSpinning: false,
-            });
+            });*/
+
+            //4
+            const action = fetchPost(posts);
+            dispatcher.dispatch(action);
+
         } catch (error) {
-            consol.log(error.message);
+            console.log(error.message);
             this._setPostsFetchingState(false);
         }
     };
